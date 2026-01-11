@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Word Frequency Demo - Interactive (Checkbox)</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400&display=swap">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.2.1"></script>
+
+  <style>
+    body {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 400;
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    .layout {
+      display: flex;
+      height: 100vh;
+      box-sizing: border-box;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 400;
+    }
+
+    .sidebar {
+      width: 340px;
+      padding: 16px 14px 40px;
+      border-right: 1px solid #ddd;
+      overflow: hidden;
+      min-height: 0;
+      background: #fafafa;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .sidebar-content {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding-bottom: 12px;
+    }
+
+    .main {
+      flex: 1;
+      padding: 20px;
+      overflow: auto;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+    }
+
+    .controls-top {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .year-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+    }
+
+    .year-row select {
+      width: 80px;
+      padding: 6px 4px;
+    }
+
+    .controls-top input {
+      padding: 8px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .btn-update {
+      width: 100%;
+      padding: 12px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      font-weight: 400;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-update:hover {
+      background: #0056b3;
+    }
+
+    .btn-download {
+      margin-top: clamp(8px, 2vh, 32px);
+      display: none;
+      width: 100%;
+      padding: 11px;
+      background: #f3f6fb;
+      color: #0f2940;
+      border: 1px solid #0f2940;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      box-shadow: none;
+    }
+
+    .btn-download:hover {
+      background: #0f2940;
+      color: #f3f6fb;
+      border-color: #0f2940;
+    }
+
+    .btn-download:focus {
+      outline: 2px solid #0f2940;
+      outline-offset: 2px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .controls-label {
+      font-size: 0.9rem;
+      font-weight: 400;
+      color: #333;
+      display: block;
+      margin-top: 6px;
+    }
+
+    .btn-row button {
+      padding: 8px 14px;
+      background: #C2E7FF;
+      color: #000;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 400;
+    }
+
+    .divider {
+      border: 0;
+      border-top: 1px solid #ddd;
+      margin: 20px 0 15px;
+    }
+
+    .select-all-row {
+      display: flex;
+      justify-content: flex-start;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .select-all-btn {
+      padding: 10px 18px;
+      background: #C2E7FF;
+      color: #000;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 400;
+      min-width: 140px;
+      border: none;
+      border-radius: 16px;
+    }
+
+    .select-all-btn:hover {
+      background: #9bc5e0;
+    }
+
+    .sum-mode-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .yaxis-mode-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .sum-mode-btn {
+      padding: 8px 14px;
+      min-width: 120px;
+      background: #e0e0e0;
+      color: #666;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 400;
+    }
+
+    .sum-mode-btn.active {
+      background: #007bff;
+      color: #fff;
+      pointer-events: none;
+      cursor: default;
+    }
+
+    .sum-mode-btn.inactive:hover {
+      background: #d0d0d0;
+    }
+
+    .btn-row button:hover {
+      background: #9bc5e0;
+    }
+
+    .mode-btn {
+      flex: 1;
+      min-width: 120px;
+      font-weight: 400;
+    }
+
+    .mode-btn.active {
+      background: #007bff;
+      color: #fff;
+      pointer-events: none;
+      cursor: default;
+    }
+
+    .mode-btn.inactive {
+      background: #e0e0e0;
+      color: #666;
+      cursor: pointer;
+    }
+
+    .mode-btn.inactive:hover {
+      background: #d0d0d0;
+    }
+
+    .title-block {
+      text-align: center;
+      font-size: 26px;
+      font-weight: 400;
+      line-height: 1.2;
+      margin: 6px 0 18px;
+    }
+
+    #categorySidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .main-cat-block {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      background: #fff;
+      padding: 10px 10px 6px;
+    }
+
+    .main-cat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .main-cat-header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .main-cat-header label {
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .toggle-btn {
+      background: transparent;
+      color: #333;
+      border: none;
+      padding: 4px 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+      font-weight: 400;
+    }
+
+    .toggle-btn:hover {
+      color: #000;
+    }
+
+    .sub-cat-group {
+      display: none;
+      flex-wrap: wrap;
+      gap: 6px 14px;
+      max-height: 220px;
+      overflow-y: auto;
+      padding: 4px 2px 2px;
+    }
+
+    .sub-cat-group label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+    }
+
+    .chart-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      width: 100%;
+      margin: 0 auto;
+      flex: 1;
+    }
+
+    /* Let Chart.js canvas scale with its parent */
+    #wordChart {
+      width: 100% !important;
+      height: calc(100vh - 120px) !important;
+      max-height: none;
+      min-height: 420px;
+    }
+
+    @media (max-width: 1100px) {
+      .layout {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid #ddd;
+      }
+
+      #wordChart {
+        height: 60vh !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="layout">
+    <div class="sidebar">
+      <div class="sidebar-content">
+        <div class="controls-top">
+          <div class="title-block">
+            <div>Word Frequency</div>
+            <div>Over Time</div>
+          </div>
+          <div class="year-row">
+            <span>from</span>
+            <select id="startYearSelect"></select>
+            <span>to</span>
+            <select id="endYearSelect"></select>
+          </div>
+          <input type="text" id="wordInput" placeholder="Enter words, separated by commas (e.g., in,the,we,describe).">
+
+          <button class="btn-update" onclick="updateChart()">Update Chart</button>
+          <br>
+          <div class="controls-label">Statistical methods</div>
+          <div class="btn-row">
+            <button id="perAbstractsBtn" class="mode-btn active" onclick="setFrequencyMode('per_abstracts')">Per Abstracts</button>
+            <button id="perWordsBtn" class="mode-btn inactive" onclick="setFrequencyMode('per_words')">Per Words</button>
+          </div>
+          <div class="controls-label">Words frequency</div>
+          <div class="sum-mode-row">
+            <button id="separateBtn" class="sum-mode-btn active">Separate</button>
+            <button id="sumBtn" class="sum-mode-btn inactive">Sum</button>
+          </div>
+          <div class="controls-label">y-axis</div>
+          <div class="yaxis-mode-row">
+            <button id="adaptiveBtn" class="sum-mode-btn active">Adaptive</button>
+            <button id="startZeroBtn" class="sum-mode-btn inactive">Start from 0</button>
+          </div>
+          <hr class="divider">
+          <div class="select-all-row">
+            <button id="selectAllBtn" class="select-all-btn">Select All</button>
+          </div>
+        </div>
+        <div id="categorySidebar"></div>
+      </div>
+      <button id="downloadBtn" class="btn-update btn-download">Download Chart</button>
+    </div>
+    <div class="main">
+      <div class="chart-container">
+        <canvas id="wordChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let myChart = null;
+    // Frequency display mode: 'per_abstracts' or 'per_words'
+    let frequencyMode = 'per_abstracts';
+    // Cache of the most recent merged raw data (all YYMM rows, before year filtering)
+    let cachedMergedData = null;
+    let cachedSelections = null; // Selections used when building cachedMergedData, for title construction
+    let sumMode = false; // Whether to sum input words into one line (Separate=false, Sum=true)
+    let startFromZero = false; // Whether y-axis starts from 0 (Adaptive=false, Start from 0=true)
+
+    // Set Chart.js global font to Montserrat 400
+    if (window.Chart && Chart.defaults && Chart.defaults.font) {
+      Chart.defaults.font.family = 'Montserrat';
+      Chart.defaults.font.weight = '400';
+    }
+
+    function setFrequencyMode(mode, skipUpdate = false) {
+      if (mode !== 'per_abstracts' && mode !== 'per_words') return;
+      if (frequencyMode === mode) return;
+      frequencyMode = mode;
+      const perAbsBtn = document.getElementById('perAbstractsBtn');
+      const perWordsBtn = document.getElementById('perWordsBtn');
+      if (perAbsBtn && perWordsBtn) {
+        const isAbs = mode === 'per_abstracts';
+        perAbsBtn.classList.toggle('active', isAbs);
+        perAbsBtn.classList.toggle('inactive', !isAbs);
+        perWordsBtn.classList.toggle('active', !isAbs);
+        perWordsBtn.classList.toggle('inactive', isAbs);
+      }
+      if (!skipUpdate) {
+        updateChart();
+      }
+    }
+
+    const categories = {
+      /* Top-level categories condensed: physics/math/cs now hold former standalone subjects */
+      "cs": {
+        "AI": "Artificial Intelligence",
+        "AR": "Architecture",
+        "CC": "Computational Complexity",
+        "CE": "Computational Engineering",
+        "CG": "Computational Geometry",
+        "CL": "Computation and Language",
+        "cmp-lg": "Computation and Language", /* alias */
+        "CR": "Cryptography and Security",
+        "CV": "Computer Vision",
+        "CY": "Computers and Society",
+        "DB": "Databases",
+        "DC": "Distributed Computing",
+        "DL": "Digital Libraries",
+        "DM": "Discrete Mathematics",
+        "DS": "Data Structures and Algorithms",
+        "ET": "Emerging Technologies",
+        "FL": "Formal Languages",
+        "GL": "General Literature",
+        "GR": "Graphics",
+        "GT": "Game Theory",
+        "HC": "Human-Computer Interaction",
+        "IR": "Information Retrieval",
+        "IT": "Information Theory",
+        "LG": "Machine Learning",
+        "LO": "Logic in Computer Science",
+        "MA": "Multiagent Systems",
+        "MM": "Multimedia",
+        "MS": "Mathematical Software",
+        "NA": "Numerical Analysis",
+        "NE": "Neural and Evolutionary Computing",
+        "NI": "Networking and Internet Architecture",
+        "OH": "Other Computer Science",
+        "OS": "Operating Systems",
+        "PF": "Performance",
+        "PL": "Programming Languages",
+        "RO": "Robotics",
+        "SC": "Symbolic Computation",
+        "SD": "Sound",
+        "SE": "Software Engineering",
+        "SI": "Social and Information Networks",
+        "SY": "Systems and Control"
+      },
+      "econ": {
+        "EM": "Econometrics",
+        "GN": "General Economics",
+        "TH": "Economic Theory"
+      },
+      "eess": {
+        "AS": "Audio and Speech Processing",
+        "IV": "Image and Video Processing",
+        "SP": "Signal Processing",
+        "SY": "Systems and Control"
+      },
+      "math": {
+        "AC": "Commutative Algebra",
+        "AG": "Algebraic Geometry",
+        "AP": "Analysis of PDEs",
+        "AT": "Algebraic Topology",
+        "CA": "Classical Analysis",
+        "CO": "Combinatorics",
+        "CT": "Category Theory",
+        "CV": "Complex Variables",
+        "DG": "Differential Geometry",
+        "DS": "Dynamical Systems",
+        "FA": "Functional Analysis",
+        "GM": "General Mathematics",
+        "GN": "General Topology",
+        "GR": "Group Theory",
+        "GT": "Geometric Topology",
+        "HO": "History and Overview",
+        "KT": "K-Theory and Homology",
+        "LO": "Logic",
+        "MG": "Metric Geometry",
+        "MP": "Mathematical Physics",
+        "NA": "Numerical Analysis",
+        "NT": "Number Theory",
+        "OA": "Operator Algebras",
+        "OC": "Optimization and Control",
+        "PR": "Probability",
+        "QA": "Quantum Algebra",
+        "RA": "Rings and Algebras",
+        "RT": "Representation Theory",
+        "SG": "Symplectic Geometry",
+        "SP": "Spectral Theory",
+        "ST": "Statistics Theory",
+        "alg-geom": "Algebraic Geometry",
+        "funct-an": "Functional Analysis",
+        "q-alg": "Quantum Algebra",
+        "dg-ga": "Differential Geometry",
+        "bayes-an": "Bayesian Analysis"
+      },
+      "physics": {
+        "acc-ph": "Accelerator Physics",
+        "ao-ph": "Atmospheric and Oceanic Physics",
+        "app-ph": "Applied Physics",
+        "atm-clus": "Atomic and Molecular Clusters",
+        "atom-ph": "Atomic Physics",
+        "bio-ph": "Biological Physics",
+        "chem-ph": "Chemical Physics",
+        "class-ph": "Classical Physics",
+        "comp-ph": "Computational Physics",
+        "data-an": "Data Analysis, Statistics and Probability",
+        "ed-ph": "Physics Education",
+        "flu-dyn": "Fluid Dynamics",
+        "gen-ph": "General Physics",
+        "geo-ph": "Geophysics",
+        "hist-ph": "History and Philosophy of Physics",
+        "ins-det": "Instrumentation and Detectors",
+        "med-ph": "Medical Physics",
+        "optics": "Optics",
+        "plasm-ph": "Plasma Physics",
+        "pop-ph": "Popular Physics",
+        "soc-ph": "Physics and Society",
+        "space-ph": "Space Physics",
+        /* Added former standalone physics-related subjects */
+        "astro-ph": "Astrophysics",
+        "hep-th": "High Energy Physics - Theory",
+        "hep-ph": "High Energy Physics - Phenomenology",
+        "hep-ex": "High Energy Physics - Experiment",
+        "gr-qc": "General Relativity and Quantum Cosmology",
+        "nucl-th": "Nuclear Theory",
+        "nucl-ex": "Nuclear Experiment",
+        "cond-mat": "Condensed Matter",
+        "quant-ph": "Quantum Physics",
+        "math-ph": "Mathematical Physics",
+        "chao-dyn": "Chaotic Dynamics",
+        "comp-gas": "Computational Gas Dynamics",
+        "mtrl-th": "Materials Theory",
+        "supr-con": "Superconductivity",
+        "acc-phys": "Accelerator Physics (Legacy Code)",
+        "adap-org": "Adaptation and Self-Organizing Systems",
+        "patt-sol": "Pattern Formation and Solitons",
+        "ao-sci": "Atmospheric and Oceanic Sciences",
+        "hep-lat": "High Energy Physics - Lattice",
+        "solv-int": "Exactly Solvable and Integrable Systems",
+        "nlin": "Nonlinear Sciences"
+      },
+      "q-bio": {
+        "BM": "Biomolecules",
+        "CB": "Cell Behavior",
+        "GN": "Genomics",
+        "MN": "Molecular Networks",
+        "NC": "Neurons and Cognition",
+        "OT": "Other Quantitative Biology",
+        "PE": "Populations and Evolution",
+        "QM": "Quantitative Methods",
+        "SC": "Subcellular Processes",
+        "TO": "Tissues and Organs"
+      },
+      "q-fin": {
+        "CP": "Computational Finance",
+        "EC": "Economics",
+        "GN": "General Finance",
+        "MF": "Mathematical Finance",
+        "PM": "Portfolio Management",
+        "PR": "Pricing of Securities",
+        "RM": "Risk Management",
+        "ST": "Statistical Finance",
+        "TR": "Trading and Market Microstructure"
+      },
+      "stat": {
+        "AP": "Applications",
+        "CO": "Computation",
+        "ME": "Methodology",
+        "ML": "Machine Learning",
+        "OT": "Other Statistics",
+        "TH": "Statistics Theory"
+      },
+      /* Removed standalone wrappers for subjects now under physics/math/cs */
+    };
+
+    const CDN_BASE = 'https://pub-f9a978d663e346918cca6dadbda85390.r2.dev/';
+
+    async function parseJsonLinesUrl(url) {
+      const response = await fetch(url, { cache: 'force-cache' });
+      if (!response.ok) {
+        throw new Error(`Failed to load ${url}: ${response.status}`);
+      }
+      const rawText = await response.text();
+      const rows = rawText.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+      if (!rows.length) return [];
+      return rows.map(line => {
+        try {
+          const parsed = JSON.parse(line);
+          if (typeof parsed.YYMM === 'string') {
+            const numeric = Number(parsed.YYMM);
+            parsed.YYMM = Number.isFinite(numeric) ? numeric : parsed.YYMM;
+          }
+          return parsed;
+        } catch (err) {
+          console.warn(`Skip malformed JSON line in ${url}`, err);
+          return null;
+        }
+      }).filter(Boolean);
+    }
+
+    async function loadJsonWithFallbacks(paths) {
+      for (const path of paths) {
+        try {
+          const data = await parseJsonLinesUrl(path);
+          if (Array.isArray(data) && data.length) {
+            return data;
+          }
+        } catch (err) {
+          console.warn(`Failed to load ${path}`, err);
+        }
+      }
+      return [];
+    }
+
+    function mergeDataRows(listArray) {
+      const merged = {};
+      listArray.forEach(list => {
+        list.forEach(row => {
+          const keyVal = row['YYMM'];
+          const key = typeof keyVal === 'number' ? keyVal : Number(keyVal);
+          if (!Number.isFinite(key)) return;
+          if (!merged[key]) {
+            merged[key] = { YYMM: key };
+          }
+          Object.keys(row).forEach(column => {
+            if (column === 'YYMM') return;
+            const rawVal = row[column];
+            const numericVal = typeof rawVal === 'number' ? rawVal : Number(rawVal);
+            if (Number.isFinite(numericVal)) {
+              merged[key][column] = (merged[key][column] || 0) + numericVal;
+            } else if (merged[key][column] === undefined) {
+              merged[key][column] = rawVal;
+            }
+          });
+        });
+      });
+      return Object.keys(merged)
+        .map(key => merged[key])
+        .sort((a, b) => a['YYMM'] - b['YYMM']);
+    }
+
+    // ---------- Sidebar category build and selection logic ----------
+
+    function buildCategorySidebar() {
+      const sidebar = document.getElementById('categorySidebar');
+      sidebar.innerHTML = '';
+      Object.entries(categories).forEach(([mainKey, subMap]) => {
+        const block = document.createElement('div');
+        block.className = 'main-cat-block';
+        block.dataset.main = mainKey;
+
+        const header = document.createElement('div');
+        header.className = 'main-cat-header';
+        const headerLeft = document.createElement('div');
+        headerLeft.className = 'main-cat-header-left';
+
+        const label = document.createElement('label');
+        const mainCb = document.createElement('input');
+        mainCb.type = 'checkbox';
+        mainCb.className = 'main-category-checkbox';
+        mainCb.dataset.main = mainKey;
+        mainCb.checked = (mainKey === 'cs'); // Default to selecting only Computer Science; others remain unchecked
+        label.appendChild(mainCb);
+        label.appendChild(document.createTextNode(resolveMainName(mainKey)));
+        headerLeft.appendChild(label);
+
+        const toggleBtn = document.createElement('button');
+        toggleBtn.type = 'button';
+        toggleBtn.className = 'toggle-btn';
+        toggleBtn.dataset.main = mainKey;
+        toggleBtn.textContent = '⮞'; // Start with collapsed arrow indicator
+        header.appendChild(headerLeft);
+        header.appendChild(toggleBtn);
+
+        const group = document.createElement('div');
+        group.className = 'sub-cat-group';
+        group.dataset.main = mainKey;
+
+        Object.entries(subMap).forEach(([code, name]) => {
+          const lab = document.createElement('label');
+          const cb = document.createElement('input');
+          cb.type = 'checkbox';
+          cb.className = 'sub-category-checkbox';
+          cb.dataset.main = mainKey;
+          cb.value = `${mainKey}.${code}`;
+          lab.appendChild(cb);
+          lab.appendChild(document.createTextNode(name));
+          group.appendChild(lab);
+        });
+
+        block.appendChild(header);
+        block.appendChild(group);
+        sidebar.appendChild(block);
+      });
+
+      // Event: expand/collapse toggle
+      sidebar.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const main = btn.dataset.main;
+          const group = sidebar.querySelector(`.sub-cat-group[data-main="${main}"]`);
+          if (!group) return;
+          const visible = group.style.display === 'flex';
+          group.style.display = visible ? 'none' : 'flex';
+          btn.textContent = visible ? '⮞' : '⮟';
+        });
+      });
+
+      // Event: parent checkbox
+      sidebar.querySelectorAll('.main-category-checkbox').forEach(cb => {
+        cb.addEventListener('change', () => {
+          const main = cb.dataset.main;
+          const subs = sidebar.querySelectorAll(`.sub-category-checkbox[data-main="${main}"]`);
+          if (cb.checked) {
+            subs.forEach(s => s.checked = false); // Checked parent means All subcategories
+          }
+          // Do not fetch JSON here; re-render only when cache exists
+          renderChartFromCache();
+        });
+      });
+
+      // Event: child checkbox
+      sidebar.querySelectorAll('.sub-category-checkbox').forEach(cb => {
+        cb.addEventListener('change', () => {
+          const main = cb.dataset.main;
+          // If any child is checked, uncheck parent All
+          const subs = Array.from(sidebar.querySelectorAll(`.sub-category-checkbox[data-main="${main}"]`));
+          const anyChecked = subs.some(s => s.checked);
+          const mainCb = sidebar.querySelector(`.main-category-checkbox[data-main="${main}"]`);
+          if (mainCb) mainCb.checked = !anyChecked; // No child checked means keep parent All
+          renderChartFromCache();
+        });
+      });
+    }
+
+    function resolveMainName(mainKey) {
+      const map = {
+        cs: 'Computer Science', econ: 'Economics', eess: 'Electrical Engineering and Systems Science', math: 'Mathematics', physics: 'Physics', 'q-bio': 'Quantitative Biology', 'q-fin': 'Quantitative Finance', stat: 'Statistics'
+      };
+      return map[mainKey] || mainKey;
+    }
+
+    function collectSelections() {
+      const sidebar = document.getElementById('categorySidebar');
+      const result = [];
+      Object.keys(categories).forEach(mainKey => {
+        const mainCb = sidebar.querySelector(`.main-category-checkbox[data-main="${mainKey}"]`);
+        const subCbs = Array.from(sidebar.querySelectorAll(`.sub-category-checkbox[data-main="${mainKey}"]`));
+        const checkedSubs = subCbs.filter(cb => cb.checked).map(cb => cb.value);
+        if (mainCb && mainCb.checked) {
+          result.push({ mainKey, isAll: true, subValues: [] });
+        } else if (checkedSubs.length) {
+          result.push({ mainKey, isAll: false, subValues: checkedSubs });
+        }
+      });
+      return result;
+    }
+
+    // Select-all / unselect-all button logic
+    function toggleSelectAll() {
+      const mainCbs = Array.from(document.querySelectorAll('.main-category-checkbox'));
+      if (!mainCbs.length) return;
+      const allSelected = mainCbs.every(cb => cb.checked);
+      if (allSelected) {
+        // Deselect everything
+        mainCbs.forEach(cb => cb.checked = false);
+        // Deselect all subcategories
+        document.querySelectorAll('.sub-category-checkbox').forEach(cb => cb.checked = false);
+      } else {
+        // Select all main categories (All), and clear child selections
+        mainCbs.forEach(cb => cb.checked = true);
+        document.querySelectorAll('.sub-category-checkbox').forEach(cb => cb.checked = false);
+      }
+      const btn = document.getElementById('selectAllBtn');
+      if (btn) {
+        btn.textContent = allSelected ? 'Select All' : 'Unselect All';
+      }
+      renderChartFromCache();
+    }
+
+    function resolveSubcategoryName(mainCategoryKey, value) {
+      const parts = value.split('.');
+      const subCode = parts[1] || '';
+      const mapping = categories[mainCategoryKey] || {};
+      return mapping[subCode] || value;
+    }
+
+    async function loadMainCategoryData(mainCategoryKey) {
+      const slug = mainCategoryKey.toLowerCase();
+        const directData = await loadJsonWithFallbacks([
+          `${CDN_BASE}${slug}.All.json`,
+          `${CDN_BASE}${slug}.json`,
+          `${CDN_BASE}${mainCategoryKey}.All.json`,
+          `${CDN_BASE}${mainCategoryKey}.json`
+      ]);
+      if (directData.length) {
+        return directData;
+      }
+
+      const mainCategoryData = categories[mainCategoryKey] || {};
+      const childCodes = Object.keys(mainCategoryData).filter(code => code !== "");
+      if (!childCodes.length) {
+        return [];
+      }
+
+      const lists = await Promise.all(childCodes.map(code => {
+        const base = `${mainCategoryKey}.${code}`;
+        // Added fallback: legacy standalone code files (e.g., astro-ph.json) before restructuring
+        return loadJsonWithFallbacks([
+          `${CDN_BASE}${base.toLowerCase()}.json`,
+          `${CDN_BASE}${base}.json`,
+          `${CDN_BASE}${code.toLowerCase()}.All.json`,
+          `${CDN_BASE}${code.toLowerCase()}.json`,
+          `${CDN_BASE}${code}.All.json`,
+          `${CDN_BASE}${code}.json`
+        ]);
+      }));
+
+      return mergeDataRows(lists);
+    }
+
+    async function loadSpecificSubcategoryData(mainCategoryKey, selectedValues) {
+      const lists = await Promise.all(selectedValues.map(value => {
+        // value pattern mainCategory.code ; provide legacy fallbacks for former top-level subjects
+        const parts = value.split('.');
+        const code = parts[1] || parts[0];
+        return loadJsonWithFallbacks([
+            `${CDN_BASE}${value.toLowerCase()}.json`,
+            `${CDN_BASE}${value}.json`,
+            `${CDN_BASE}${code.toLowerCase()}.All.json`,
+            `${CDN_BASE}${code.toLowerCase()}.json`,
+            `${CDN_BASE}${code}.All.json`,
+            `${CDN_BASE}${code}.json`
+        ]);
+      }));
+      return mergeDataRows(lists);
+    }
+    // ---------- Chart update logic (supports multiple main categories) ----------
+
+    function initYearSelectors() {
+      const startSel = document.getElementById('startYearSelect');
+      const endSel = document.getElementById('endYearSelect');
+      startSel.innerHTML = '';
+      endSel.innerHTML = '';
+      for (let y = 2010; y <= 2025; y++) {
+        const o1 = document.createElement('option');
+        o1.value = String(y);
+        o1.textContent = String(y);
+        startSel.appendChild(o1);
+        const o2 = document.createElement('option');
+        o2.value = String(y);
+        o2.textContent = String(y);
+        endSel.appendChild(o2);
+      }
+      startSel.value = '2010';
+      endSel.value = '2025';
+
+      startSel.addEventListener('change', () => {
+        if (parseInt(startSel.value) > parseInt(endSel.value)) {
+          endSel.value = startSel.value;
+        }
+        renderChartFromCache();
+      });
+      endSel.addEventListener('change', () => {
+        if (parseInt(endSel.value) < parseInt(startSel.value)) {
+          startSel.value = endSel.value;
+        }
+        renderChartFromCache();
+      });
+    }
+
+    function convertToDate(num) {
+      const year = 2000 + Math.floor(num / 100);
+      const month = (num % 100) - 1;
+      return new Date(year, month, 1);
+    }
+
+    function toNumber(value) {
+      if (typeof value === 'number') return value;
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+
+    function setSumModeButtons(isSum) {
+      const sepBtn = document.getElementById('separateBtn');
+      const sumBtn = document.getElementById('sumBtn');
+      if (!sepBtn || !sumBtn) return;
+      sumMode = !!isSum;
+      sepBtn.classList.toggle('active', !sumMode);
+      sepBtn.classList.toggle('inactive', sumMode);
+      sumBtn.classList.toggle('active', sumMode);
+      sumBtn.classList.toggle('inactive', !sumMode);
+    }
+
+    function setYAxisModeButtons(isZero) {
+      const adaptiveBtn = document.getElementById('adaptiveBtn');
+      const startZeroBtn = document.getElementById('startZeroBtn');
+      if (!adaptiveBtn || !startZeroBtn) return;
+      startFromZero = !!isZero;
+      adaptiveBtn.classList.toggle('active', !startFromZero);
+      adaptiveBtn.classList.toggle('inactive', startFromZero);
+      startZeroBtn.classList.toggle('active', startFromZero);
+      startZeroBtn.classList.toggle('inactive', !startFromZero);
+    }
+
+    function setDownloadButtonVisible(isVisible) {
+      const btn = document.getElementById('downloadBtn');
+      if (btn) {
+        btn.style.display = isVisible ? 'block' : 'none';
+      }
+    }
+
+    function handleDownloadClick() {
+      if (!myChart) {
+        alert('Please click Update Chart first to load data.');
+        return;
+      }
+      const canvas = document.getElementById('wordChart');
+      if (!canvas) return;
+      const fileName = 'word-frequency-chart.png';
+      const exportCanvas = document.createElement('canvas');
+      exportCanvas.width = canvas.width;
+      exportCanvas.height = canvas.height;
+      const ctx = exportCanvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+      ctx.drawImage(canvas, 0, 0);
+
+      if (exportCanvas.toBlob) {
+        exportCanvas.toBlob(blob => {
+          if (!blob) return;
+          const link = document.createElement('a');
+          const url = URL.createObjectURL(blob);
+          link.href = url;
+          link.download = fileName;
+          link.click();
+          URL.revokeObjectURL(url);
+        }, 'image/png');
+      } else {
+        const link = document.createElement('a');
+        link.href = exportCanvas.toDataURL('image/png');
+        link.download = fileName;
+        link.click();
+      }
+    }
+
+    function buildDatasets(wordsPlot, filteredRows) {
+      if (!wordsPlot.length || !filteredRows.length) return [];
+      const hasAnyWord = wordsPlot.some(word => filteredRows.some(row => Object.prototype.hasOwnProperty.call(row, word)));
+      if (!hasAnyWord) return [];
+
+      if (sumMode) {
+        const sumData = filteredRows.map(row => {
+          const totalCount = wordsPlot.reduce((acc, word) => acc + toNumber(row[word]), 0);
+          if (frequencyMode === 'per_words') {
+            const totalWords = toNumber(row['num_word']);
+            return totalWords > 0 ? (totalCount / totalWords) * 1000000 : 0;
+          } else {
+            const abstracts = toNumber(row['num_abstracts']);
+            return abstracts > 0 ? (totalCount / abstracts) * 10000 : 0;
+          }
+        });
+        const labelWords = wordsPlot.slice(0, 5).join(', ');
+        const tail = wordsPlot.length > 5 ? ' ...' : '';
+        return [{
+          label: `Sum (${labelWords}${tail})`,
+          data: sumData,
+          borderWidth: 2,
+          fill: false,
+          tension: 0.1
+        }];
+      }
+
+      return wordsPlot.map(word => {
+        const hasWord = filteredRows.some(row => Object.prototype.hasOwnProperty.call(row, word));
+        if (!hasWord) return null;
+        return {
+          label: word,
+          data: filteredRows.map(row => {
+            const count = toNumber(row[word]);
+            if (frequencyMode === 'per_words') {
+              const totalWords = toNumber(row['num_word']);
+              return totalWords > 0 ? (count / totalWords) * 1000000 : 0;
+            } else {
+              const abstracts = toNumber(row['num_abstracts']);
+              return abstracts > 0 ? (count / abstracts) * 10000 : 0;
+            }
+          }),
+          borderWidth: 2,
+          fill: false,
+          tension: 0.1
+        };
+      }).filter(d => d);
+    }
+
+    function handleSumClick() {
+      if (!cachedMergedData || !cachedSelections) {
+        alert('Please click Update Chart first to load data.');
+        return;
+      }
+      setSumModeButtons(true);
+      renderChartFromCache();
+    }
+
+    function handleSeparateClick() {
+      if (!cachedMergedData || !cachedSelections) {
+        // Allow switching UI state even without data, but no render yet
+        setSumModeButtons(false);
+        return;
+      }
+      setSumModeButtons(false);
+      renderChartFromCache();
+    }
+
+    function handleAdaptiveClick() {
+      setYAxisModeButtons(false);
+      renderChartFromCache();
+    }
+
+    function handleStartZeroClick() {
+      if (!cachedMergedData || !cachedSelections) {
+        // Allow UI state change even without data; chart will update after data load
+        setYAxisModeButtons(true);
+        return;
+      }
+      setYAxisModeButtons(true);
+      renderChartFromCache();
+    }
+
+    function renderChartFromCache() {
+      if (!cachedMergedData || !cachedSelections) return; // Data not loaded yet (Update Chart not clicked)
+      const input = document.getElementById('wordInput').value;
+      const wordsPlot = input
+        .split(/[，,]/)
+        .map(word => word.trim().replace(/^['"]+|['"]+$/g, ''))
+        .filter(word => word); // Words to plot; support both comma types and strip surrounding quotes
+      if (!wordsPlot.length) return;
+      const startYear = parseInt(document.getElementById('startYearSelect').value, 10);
+      const endYear = parseInt(document.getElementById('endYearSelect').value, 10);
+
+      const filteredRows = cachedMergedData.filter(row => {
+        const dt = convertToDate(row['YYMM']);
+        const y = dt.getFullYear();
+        return y >= startYear && y <= endYear;
+      });
+      if (!filteredRows.length) {
+        if (myChart) { myChart.destroy(); myChart = null; }
+        setDownloadButtonVisible(false);
+        return;
+      }
+      const dates = filteredRows.map(row => convertToDate(row['YYMM']));
+      const datasets = buildDatasets(wordsPlot, filteredRows);
+      if (!datasets.length) {
+        if (myChart) { myChart.destroy(); myChart = null; }
+        setDownloadButtonVisible(false);
+        return;
+      }
+      if (myChart) myChart.destroy();
+      const ctx = document.getElementById('wordChart').getContext('2d');
+      myChart = new Chart(ctx, {
+        type: 'line',
+        data: { labels: dates, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          locale: 'en-US',
+          plugins: {
+            tooltip: {
+              callbacks: {
+                title: function (context) {
+                  const date = context[0].parsed.x;
+                  return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+                },
+                label: function (context) {
+                  const rawVal = Number(context.raw ?? (context.parsed ? context.parsed.y : context.formattedValue));
+                  let displayVal = context.formattedValue;
+                  if (Number.isFinite(rawVal)) {
+                    if (rawVal >= 1000) {
+                      displayVal = Math.trunc(rawVal).toString();
+                    } else if (rawVal >= 100) {
+                      displayVal = rawVal.toFixed(1);
+                    } else {
+                      displayVal = rawVal.toFixed(2);
+                    }
+                  }
+                  return [
+                    'word: ' + context.dataset.label,
+                    'frequency: ' + displayVal
+                  ];
+                }
+              }
+            },
+            title: { display: true, text: 'Word Frequency Over Time', font: { size: 20, family: 'Montserrat', weight: '400' } },
+            legend: { labels: { font: { size: 16, family: 'Montserrat', weight: '400' } } },
+            annotation: {
+              annotations: {
+                dec2022: {
+                  type: 'line',
+                  xMin: new Date(2022, 11, 1),
+                  xMax: new Date(2022, 11, 1),
+                  borderColor: 'red',
+                  borderWidth: 2,
+                  borderDash: [6, 6],
+                  label: {
+                    display: true,
+                    content: 'December 2022',
+                    position: 'end',
+                    yAdjust: 10,
+                    textAlign: 'right',
+                    backgroundColor: 'transparent',
+                    color: 'black',
+                    padding: 0,
+                    font: { size: 16, family: 'Montserrat', weight: '400' }
+                  }
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              type: 'time',
+              time: { unit: 'month', displayFormats: { month: 'MMM yyyy' } },
+              // min: new Date(startYear, startYear === 2007 ? 4 : 0, 1),
+              min: new Date(startYear, 0, 1),
+              max: new Date(endYear, 11, 31),
+              afterBuildTicks: function (scale) {
+                const min = scale.min;
+                const max = scale.max;
+                const count = 10; // min, max + 8 intermediate
+                const step = (max - min) / (count - 1);
+                const ticks = [];
+                for (let i = 0; i < count; i++) {
+                  ticks.push({ value: min + i * step });
+                }
+                scale.ticks = ticks;
+              },
+              ticks: { source: 'auto', autoSkip: false }
+            },
+            y: {
+              min: startFromZero ? 0 : undefined,
+              title: {
+                display: true,
+                text: frequencyMode === 'per_words' ? 'Frequency (per 1,000,000 words)' : 'Frequency (per 10,000 abstracts)',
+                font: { size: 14 }
+              }
+            }
+          }
+        }
+      });
+      setDownloadButtonVisible(true);
+    }
+
+    async function updateChart() {
+      const input = document.getElementById('wordInput').value;
+      setDownloadButtonVisible(false);
+      // Parse input words, trim extra spaces/quotes, support both comma types
+      const wordsPlot = input
+        .split(/[，,]/)
+        .map(word => word.trim().replace(/^['"‘’“”]+|['"‘’“”]+$/g, ''))
+        .filter(word => word);
+      if (!wordsPlot.length) {
+        alert('Please enter at least one word!');
+        return;
+      }
+      const selections = collectSelections();
+      if (!selections.length) {
+        alert('Please select at least one main category or its subcategories!');
+        return;
+      }
+      setSumModeButtons(false);
+      setYAxisModeButtons(false);
+      const startYear = parseInt(document.getElementById('startYearSelect').value, 10);
+      const endYear = parseInt(document.getElementById('endYearSelect').value, 10);
+      let data = [];
+      try {
+        const lists = await Promise.all(selections.map(sel => {
+          if (sel.isAll) return loadMainCategoryData(sel.mainKey);
+          return loadSpecificSubcategoryData(sel.mainKey, sel.subValues);
+        }));
+        data = mergeDataRows(lists);
+      } catch (err) {
+        console.error('Failed to load JSON data:', err);
+      }
+
+      if (!data || !data.length) {
+        if (myChart) {
+          myChart.destroy();
+          myChart = null;
+        }
+        setDownloadButtonVisible(false);
+        alert('No word frequency data found for the selected subjects.');
+        return;
+      }
+
+      cachedMergedData = data; // Cache merged raw data
+      cachedSelections = selections; // Cache selections used for title
+      const filteredRows = data.filter(row => {
+        const dt = convertToDate(row["YYMM"]);
+        const y = dt.getFullYear();
+        return y >= startYear && y <= endYear;
+      });
+
+      if (!filteredRows.length) {
+        if (myChart) {
+          myChart.destroy();
+          myChart = null;
+        }
+        setDownloadButtonVisible(false);
+        alert('No data available in the selected year range.');
+        return;
+      }
+
+      const dates = filteredRows.map(row => convertToDate(row["YYMM"]));
+      const datasets = buildDatasets(wordsPlot, filteredRows);
+
+      if (!datasets.length) {
+        if (myChart) {
+          myChart.destroy();
+          myChart = null;
+        }
+        setDownloadButtonVisible(false);
+        alert('The frequency of these words in the database is too low, below the threshold, unable to plot the chart.');
+        return;
+      }
+
+      if (myChart) {
+        myChart.destroy();
+      }
+
+      const ctx = document.getElementById('wordChart').getContext('2d');
+      const titleParts = selections.map(sel => {
+        if (sel.isAll) return resolveMainName(sel.mainKey) + ' (All)';
+        const subNames = sel.subValues.map(v => resolveSubcategoryName(sel.mainKey, v));
+        return resolveMainName(sel.mainKey) + ': ' + (subNames.slice(0, 5).join(', ') + (subNames.length > 5 ? ' ...' : '')); // Truncate if too long
+      });
+      const mainLabel = titleParts.join(' | ');
+
+      myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: dates,
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          locale: 'en-US',
+          plugins: {
+            tooltip: {
+              callbacks: {
+                title: function (context) {
+                  const date = context[0].parsed.x;
+                  return new Date(date).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long'
+                  });
+                },
+                label: function (context) {
+                  const rawVal = Number(context.raw ?? (context.parsed ? context.parsed.y : context.formattedValue));
+                  let displayVal = context.formattedValue;
+                  if (Number.isFinite(rawVal)) {
+                    if (rawVal >= 1000) {
+                      displayVal = Math.trunc(rawVal).toString();
+                    } else if (rawVal >= 100) {
+                      displayVal = rawVal.toFixed(1);
+                    } else {
+                      displayVal = rawVal.toFixed(2);
+                    }
+                  }
+                  return [
+                    'Word: ' + context.dataset.label,
+                    'Frequency: ' + displayVal
+                  ];
+                }
+              }
+            },
+            title: {
+              display: true,
+              text: 'Word Frequency Over Time',
+              font: { size: 20, family: 'Montserrat', weight: '400' }
+            },
+            legend: {
+              labels: { font: { size: 16, family: 'Montserrat', weight: '400' } }
+            },
+            annotation: {
+              annotations: {
+                dec2022: {
+                  type: 'line',
+                  xMin: new Date(2022, 11, 1),
+                  xMax: new Date(2022, 11, 1),
+                  borderColor: 'red',
+                  borderWidth: 2,
+                  borderDash: [6, 6],
+                  label: {
+                    display: true,
+                    content: 'December 2022',
+                    position: 'end',
+                    yAdjust: 10,
+                    textAlign: 'right',
+                    color: 'black',
+                    backgroundColor: 'transparent',
+                    padding: 0,
+                    font: { size: 16, family: 'Montserrat', weight: '400' }
+                  }
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              type: 'time',
+              time: {
+                unit: 'month',
+                displayFormats: { month: 'MMM yyyy' }
+              },
+              // min: new Date(startYear, startYear === 2007 ? 4 : 0, 1),
+              min: new Date(startYear, 0, 1),
+              max: new Date(endYear, 11, 31),
+              afterBuildTicks: function (scale) {
+                const min = scale.min;
+                const max = scale.max;
+                const count = 10; // min, max + 8 intermediate
+                const step = (max - min) / (count - 1);
+                const ticks = [];
+                for (let i = 0; i < count; i++) {
+                  ticks.push({ value: min + i * step });
+                }
+                scale.ticks = ticks;
+              },
+              ticks: {
+                source: 'auto',
+                autoSkip: false
+              }
+            },
+            y: {
+              min: startFromZero ? 0 : undefined,
+              title: {
+                display: true,
+                text: frequencyMode === 'per_words' ? 'Frequency (per 1,000,000 words)' : 'Frequency (per 10,000 abstracts)',
+                font: { size: 14 }
+              }
+            }
+          }
+        }
+      });
+      setDownloadButtonVisible(true);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      initYearSelectors();
+      document.getElementById('wordInput').value = 'delve,intricate';
+      buildCategorySidebar();
+      const selAllBtn = document.getElementById('selectAllBtn');
+      if (selAllBtn) selAllBtn.addEventListener('click', toggleSelectAll);
+      const sumBtn = document.getElementById('sumBtn');
+      if (sumBtn) sumBtn.addEventListener('click', handleSumClick);
+      const sepBtn = document.getElementById('separateBtn');
+      if (sepBtn) sepBtn.addEventListener('click', handleSeparateClick);
+      const adaptiveBtn = document.getElementById('adaptiveBtn');
+      if (adaptiveBtn) adaptiveBtn.addEventListener('click', handleAdaptiveClick);
+      const startZeroBtn = document.getElementById('startZeroBtn');
+      if (startZeroBtn) startZeroBtn.addEventListener('click', handleStartZeroClick);
+      const downloadBtn = document.getElementById('downloadBtn');
+      if (downloadBtn) downloadBtn.addEventListener('click', handleDownloadClick);
+      setDownloadButtonVisible(false);
+      setSumModeButtons(false);
+      setYAxisModeButtons(false);
+      setFrequencyMode('per_abstracts', true);
+      // Do not load JSON on init; wait for user click
+    });
+  </script>
+</body>
+
+</html>
