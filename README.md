@@ -4,6 +4,8 @@
 
 We are working to develop a platform for monitoring the impact of large language models (LLMs), with a particular focus on their effects in the academic community.
 
+Please check the trends in word usage in arXiv abstracts [here](https://llm-impact.github.io/word-usage-arxiv-abstract/).
+
 More results coming soon!
 
 ## References
