@@ -611,8 +611,6 @@
       /* Removed standalone wrappers for subjects now under physics/math/cs */
     };
 
-    const CDN_BASE = 'https://pub-f9a978d663e346918cca6dadbda85390.r2.dev/';
-
     async function parseJsonLinesUrl(url) {
       const response = await fetch(url, { cache: 'force-cache' });
       if (!response.ok) {
@@ -824,11 +822,11 @@
 
     async function loadMainCategoryData(mainCategoryKey) {
       const slug = mainCategoryKey.toLowerCase();
-        const directData = await loadJsonWithFallbacks([
-          `${CDN_BASE}${slug}.All.json`,
-          `${CDN_BASE}${slug}.json`,
-          `${CDN_BASE}${mainCategoryKey}.All.json`,
-          `${CDN_BASE}${mainCategoryKey}.json`
+      const directData = await loadJsonWithFallbacks([
+        `word_freq_50000/${slug}.All.json`,
+        `word_freq_50000/${slug}.json`,
+        `word_freq_50000/${mainCategoryKey}.All.json`,
+        `word_freq_50000/${mainCategoryKey}.json`
       ]);
       if (directData.length) {
         return directData;
@@ -844,12 +842,12 @@
         const base = `${mainCategoryKey}.${code}`;
         // Added fallback: legacy standalone code files (e.g., astro-ph.json) before restructuring
         return loadJsonWithFallbacks([
-          `${CDN_BASE}${base.toLowerCase()}.json`,
-          `${CDN_BASE}${base}.json`,
-          `${CDN_BASE}${code.toLowerCase()}.All.json`,
-          `${CDN_BASE}${code.toLowerCase()}.json`,
-          `${CDN_BASE}${code}.All.json`,
-          `${CDN_BASE}${code}.json`
+          `word_freq_50000/${base.toLowerCase()}.json`,
+          `word_freq_50000/${base}.json`,
+          `word_freq_50000/${code.toLowerCase()}.All.json`,
+          `word_freq_50000/${code.toLowerCase()}.json`,
+          `word_freq_50000/${code}.All.json`,
+          `word_freq_50000/${code}.json`
         ]);
       }));
 
@@ -862,12 +860,12 @@
         const parts = value.split('.');
         const code = parts[1] || parts[0];
         return loadJsonWithFallbacks([
-            `${CDN_BASE}${value.toLowerCase()}.json`,
-            `${CDN_BASE}${value}.json`,
-            `${CDN_BASE}${code.toLowerCase()}.All.json`,
-            `${CDN_BASE}${code.toLowerCase()}.json`,
-            `${CDN_BASE}${code}.All.json`,
-            `${CDN_BASE}${code}.json`
+          `word_freq_50000/${value.toLowerCase()}.json`,
+          `word_freq_50000/${value}.json`,
+          `word_freq_50000/${code.toLowerCase()}.All.json`,
+          `word_freq_50000/${code.toLowerCase()}.json`,
+          `word_freq_50000/${code}.All.json`,
+          `word_freq_50000/${code}.json`
         ]);
       }));
       return mergeDataRows(lists);
