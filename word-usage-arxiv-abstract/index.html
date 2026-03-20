@@ -1305,6 +1305,8 @@
         setDownloadButtonVisible(false);
         return;
       }
+      const lastDate = dates[dates.length - 1];
+      const xAxisMaxDate = new Date(lastDate.getFullYear(), lastDate.getMonth() + 1, 1);
       if (myChart) myChart.destroy();
       const ctx = document.getElementById('wordChart').getContext('2d');
       myChart = new Chart(ctx, {
@@ -1378,7 +1380,7 @@
               time: { unit: 'month', displayFormats: { month: 'MMM yyyy' } },
               // min: new Date(startYear, startYear === 2007 ? 4 : 0, 1),
               min: new Date(startYear, 0, 1),
-              max: new Date(endYear, 11, 31),
+              max: xAxisMaxDate,
               afterBuildTicks: function (scale) {
                 const min = scale.min;
                 const max = scale.max;
@@ -1494,6 +1496,8 @@
         return resolveMainName(sel.mainKey) + ': ' + (subNames.slice(0, 5).join(', ') + (subNames.length > 5 ? ' ...' : '')); // Truncate if too long
       });
       const mainLabel = titleParts.join(' | ');
+      const lastDate = dates[dates.length - 1];
+      const xAxisMaxDate = new Date(lastDate.getFullYear(), lastDate.getMonth() + 1, 1);
 
       myChart = new Chart(ctx, {
         type: 'line',
@@ -1579,7 +1583,7 @@
               },
               // min: new Date(startYear, startYear === 2007 ? 4 : 0, 1),
               min: new Date(startYear, 0, 1),
-              max: new Date(endYear, 11, 31),
+              max: xAxisMaxDate,
               afterBuildTicks: function (scale) {
                 const min = scale.min;
                 const max = scale.max;
