@@ -360,6 +360,15 @@
       user-select: text;
     }
 
+    .chart-source-text {
+      margin-top: 8px;
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.4;
+      color: #555;
+      user-select: text;
+    }
+
     .chart-legend-swatch {
       width: 12px;
       height: 12px;
@@ -452,6 +461,7 @@
         <div class="chart-text-panel">
           <h2 id="chartTitleText" class="chart-title-text">Word Frequency Over Time</h2>
           <div id="chartLegendText" class="chart-legend-text"></div>
+          <div id="chartSourceText" class="chart-source-text"></div>
         </div>
         <div class="chart-canvas-wrap">
           <canvas id="wordChart"></canvas>
@@ -1041,45 +1051,83 @@
       return rows;
     }
 
+    function buildWrappedTextRows(ctx, text, maxWidth) {
+      if (!text) return [];
+      const rows = [];
+      let current = '';
+      for (const ch of text) {
+        const next = current + ch;
+        if (current && ctx.measureText(next).width > maxWidth) {
+          rows.push(current.trim());
+          current = ch;
+        } else {
+          current = next;
+        }
+      }
+      if (current.trim()) rows.push(current.trim());
+      return rows;
+    }
+
+    function buildSelectionSourceText(selections) {
+      if (!Array.isArray(selections) || !selections.length) return '';
+      const parts = selections.map(sel => {
+        if (sel.isAll) return resolveMainName(sel.mainKey);
+        const subNames = sel.subValues.map(v => resolveSubcategoryName(sel.mainKey, v));
+        const short = subNames.slice(0, 4).join(', ');
+        const tail = subNames.length > 4 ? ' ...' : '';
+        return `${resolveMainName(sel.mainKey)} (${short}${tail})`;
+      });
+      return `Subject: ${parts.join(' | ')}`;
+    }
+
     function getExportHeaderLayout(chart, exportWidth) {
       const titleText = (document.getElementById('chartTitleText')?.textContent || 'Word Frequency Over Time').trim();
       const legendItems = getVisibleLegendItems(chart);
+      const sourceText = (document.getElementById('chartSourceText')?.textContent || '').trim();
       const measureCanvas = document.createElement('canvas');
       const measureCtx = measureCanvas.getContext('2d');
       const style = {
         paddingX: 24,
         paddingTop: 16,
         paddingBottom: 16,
-        titleFontSize: 20,
-        titleLineHeight: 26,
+        titleFontSize: 40,
+        titleLineHeight: 46,
         titleBottomGap: 12,
-        legendFontSize: 16,
-        legendLineHeight: 22,
-        swatchSize: 12,
-        swatchGap: 6,
-        itemGap: 16,
-        rowGap: 8
+        legendFontSize: 28,
+        legendLineHeight: 40,
+        swatchSize: 20,
+        swatchGap: 10,
+        itemGap: 28,
+        rowGap: 14,
+        sourceTopGap: 8,
+        sourceFontSize: 16,
+        sourceLineHeight: 22
       };
 
       measureCtx.font = `400 ${style.legendFontSize}px Georgia`;
       const maxLegendWidth = Math.max(exportWidth - style.paddingX * 2, 0);
       const legendRows = buildLegendRows(measureCtx, legendItems, maxLegendWidth, style);
+      measureCtx.font = `400 ${style.sourceFontSize}px Georgia`;
+      const sourceRows = buildWrappedTextRows(measureCtx, sourceText, maxLegendWidth);
       const hasTitle = !!titleText;
       const hasLegend = legendRows.length > 0;
+      const hasSource = sourceRows.length > 0;
       const titleHeight = hasTitle ? style.titleLineHeight : 0;
       const legendHeight = hasLegend
         ? (legendRows.length * style.legendLineHeight) + ((legendRows.length - 1) * style.rowGap)
         : 0;
       const gapBetween = hasTitle && hasLegend ? style.titleBottomGap : 0;
+      const sourceGap = hasSource && (hasTitle || hasLegend) ? style.sourceTopGap : 0;
+      const sourceHeight = hasSource ? sourceRows.length * style.sourceLineHeight : 0;
       const height = hasTitle || hasLegend
-        ? style.paddingTop + titleHeight + gapBetween + legendHeight + style.paddingBottom
+        ? style.paddingTop + titleHeight + gapBetween + legendHeight + sourceGap + sourceHeight + style.paddingBottom
         : 0;
 
-      return { titleText, legendRows, style, height };
+      return { titleText, legendRows, sourceRows, style, height };
     }
 
     function drawExportHeader(ctx, exportWidth, layout) {
-      const { titleText, legendRows, style, height } = layout;
+      const { titleText, legendRows, sourceRows, style, height } = layout;
       if (!height) return;
 
       let cursorY = style.paddingTop;
@@ -1121,13 +1169,31 @@
             cursorY += style.legendLineHeight + style.rowGap;
           }
         });
+
+        // Move cursor to the bottom of the last legend row
+        cursorY += style.legendLineHeight;
+      }
+
+      if (sourceRows.length) {
+        if (titleText || legendRows.length) {
+          cursorY += style.sourceTopGap;
+        }
+        ctx.font = `400 ${style.sourceFontSize}px Georgia`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillStyle = '#555555';
+        sourceRows.forEach(rowText => {
+          ctx.fillText(rowText, exportWidth / 2, cursorY);
+          cursorY += style.sourceLineHeight;
+        });
       }
     }
 
-    function renderChartTextMeta(chart, titleText = 'Word Frequency Over Time') {
+    function renderChartTextMeta(chart, titleText = 'Word Frequency Over Time', sourceText = '') {
       const panelEl = document.querySelector('.chart-text-panel');
       const titleEl = document.getElementById('chartTitleText');
       const legendEl = document.getElementById('chartLegendText');
+      const sourceEl = document.getElementById('chartSourceText');
       const hasChart = !!(chart && Array.isArray(chart.data?.datasets) && chart.data.datasets.length);
       if (panelEl) {
         panelEl.style.display = hasChart ? 'block' : 'none';
@@ -1137,6 +1203,9 @@
       }
       if (!legendEl) return;
       legendEl.innerHTML = '';
+      if (sourceEl) {
+        sourceEl.textContent = hasChart ? sourceText : '';
+      }
       if (!hasChart) return;
 
       getVisibleLegendItems(chart).forEach(legendItem => {
@@ -1405,7 +1474,7 @@
           }
         }
       });
-      renderChartTextMeta(myChart);
+      renderChartTextMeta(myChart, 'Word Frequency Over Time', buildSelectionSourceText(cachedSelections));
       setDownloadButtonVisible(true);
     }
 
@@ -1490,12 +1559,6 @@
       }
 
       const ctx = document.getElementById('wordChart').getContext('2d');
-      const titleParts = selections.map(sel => {
-        if (sel.isAll) return resolveMainName(sel.mainKey) + ' (All)';
-        const subNames = sel.subValues.map(v => resolveSubcategoryName(sel.mainKey, v));
-        return resolveMainName(sel.mainKey) + ': ' + (subNames.slice(0, 5).join(', ') + (subNames.length > 5 ? ' ...' : '')); // Truncate if too long
-      });
-      const mainLabel = titleParts.join(' | ');
       const lastDate = dates[dates.length - 1];
       const xAxisMaxDate = new Date(lastDate.getFullYear(), lastDate.getMonth() + 1, 1);
 
@@ -1611,7 +1674,7 @@
           }
         }
       });
-      renderChartTextMeta(myChart);
+      renderChartTextMeta(myChart, 'Word Frequency Over Time', buildSelectionSourceText(selections));
       setDownloadButtonVisible(true);
     }
 
