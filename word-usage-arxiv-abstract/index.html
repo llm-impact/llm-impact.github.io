@@ -140,7 +140,6 @@
     .btn-row button {
       padding: 8px 14px;
       background: #C2E7FF;
-      color: #000;
       border: none;
       border-radius: 4px;
       cursor: pointer;
@@ -347,7 +346,7 @@
       flex-wrap: wrap;
       justify-content: center;
       gap: 8px 16px;
-      font-size: 16px;
+      font-size: 20px;
       line-height: 1.3;
       color: #111;
       user-select: text;
@@ -363,19 +362,28 @@
     .chart-source-text {
       margin-top: 8px;
       text-align: center;
-      font-size: 12px;
+      font-size: 16px;
       line-height: 1.4;
       color: #555;
       user-select: text;
     }
 
     .chart-citation-text {
-      margin-top: 10px;
+      margin-top: 40px;
       text-align: center;
-      font-size: 13px;
+      font-size: 15px;
       line-height: 1.45;
       color: #444;
       user-select: text;
+    }
+
+    .chart-citation-text a {
+      color: #0f2940;
+      text-decoration: underline;
+    }
+
+    .chart-citation-text a:hover {
+      color: #0056b3;
     }
 
     .chart-legend-swatch {
@@ -429,7 +437,7 @@
         <div class="controls-top">
           <div class="title-block">
             <div>Word Frequency</div>
-            <div>Over Time</div>
+            <div>in arXiv Abstracts</div>
           </div>
           <div class="year-row">
             <span>from</span>
@@ -468,7 +476,7 @@
     <div class="main">
       <div class="chart-container">
         <div class="chart-text-panel">
-          <h2 id="chartTitleText" class="chart-title-text">Word Frequency Over Time</h2>
+          <h2 id="chartTitleText" class="chart-title-text">Word Frequency in arXiv Abstracts</h2>
           <div id="chartLegendText" class="chart-legend-text"></div>
           <div id="chartSourceText" class="chart-source-text"></div>
         </div>
@@ -476,7 +484,7 @@
           <canvas id="wordChart"></canvas>
         </div>
         <div id="chartCitationText" class="chart-citation-text" style="display:none;">
-          Geng, M., Dong, Y., &amp; Poibeau, T. (2026). Beyond Via: Analysis and Estimation of the Impact of Large Language Models in Academic Papers. arXiv preprint arXiv:2603.25638.
+          <a href="https://arxiv.org/abs/2603.25638" target="_blank" rel="noopener noreferrer">Geng, M., Dong, Y., &amp; Poibeau, T. (2026). Beyond Via: Analysis and Estimation of the Impact of Large Language Models in Academic Papers. arXiv preprint arXiv:2603.25638.</a>
         </div>
       </div>
     </div>
@@ -492,6 +500,11 @@
     let sumMode = false; // Whether to sum input words into one line (Separate=false, Sum=true)
     let startFromZero = false; // Whether y-axis starts from 0 (Adaptive=false, Start from 0=true)
     const chartCitationText = 'Geng, M., Dong, Y., & Poibeau, T. (2026). Beyond Via: Analysis and Estimation of the Impact of Large Language Models in Academic Papers. arXiv preprint arXiv:2603.25638.';
+    const chartCitationUrl = 'https://arxiv.org/abs/2603.25638';
+    const PRECOMPUTED_DEFAULT_SELECTIONS = Object.freeze([
+      { mainKey: 'cs', isAll: true, subValues: [] }
+    ]);
+    const PRECOMPUTED_DEFAULT_SERIES = Object.freeze([{"yymm":1001,"delve":0,"intricate":0},{"yymm":1002,"delve":19.920319,"intricate":0},{"yymm":1003,"delve":0,"intricate":0},{"yymm":1004,"delve":0,"intricate":15.313936},{"yymm":1005,"delve":0,"intricate":55.147059},{"yymm":1006,"delve":0,"intricate":15.128593},{"yymm":1007,"delve":0,"intricate":21.367521},{"yymm":1008,"delve":0,"intricate":21.645022},{"yymm":1009,"delve":0,"intricate":18.14882},{"yymm":1010,"delve":0,"intricate":0},{"yymm":1011,"delve":0,"intricate":0},{"yymm":1012,"delve":0,"intricate":18.867925},{"yymm":1101,"delve":0,"intricate":0},{"yymm":1102,"delve":0,"intricate":0},{"yymm":1103,"delve":0,"intricate":36.166365},{"yymm":1104,"delve":0,"intricate":0},{"yymm":1105,"delve":0,"intricate":0},{"yymm":1106,"delve":0,"intricate":15.625},{"yymm":1107,"delve":0,"intricate":0},{"yymm":1108,"delve":15.576324,"intricate":31.152648},{"yymm":1109,"delve":0,"intricate":0},{"yymm":1110,"delve":0,"intricate":0},{"yymm":1111,"delve":0,"intricate":0},{"yymm":1112,"delve":17.54386,"intricate":17.54386},{"yymm":1201,"delve":0,"intricate":0},{"yymm":1202,"delve":0,"intricate":33.112583},{"yymm":1203,"delve":12.048193,"intricate":24.096386},{"yymm":1204,"delve":0,"intricate":11.376564},{"yymm":1205,"delve":0,"intricate":0},{"yymm":1206,"delve":0,"intricate":9.65251},{"yymm":1207,"delve":0,"intricate":9.765625},{"yymm":1208,"delve":0,"intricate":0},{"yymm":1209,"delve":0,"intricate":13.422819},{"yymm":1210,"delve":0,"intricate":0},{"yymm":1211,"delve":0,"intricate":12.626263},{"yymm":1212,"delve":0,"intricate":12.091898},{"yymm":1301,"delve":8.130081,"intricate":8.130081},{"yymm":1302,"delve":0,"intricate":9.0009},{"yymm":1303,"delve":0,"intricate":18.198362},{"yymm":1304,"delve":0,"intricate":14.316392},{"yymm":1305,"delve":0,"intricate":11.061947},{"yymm":1306,"delve":0,"intricate":22.497188},{"yymm":1307,"delve":0,"intricate":18.761726},{"yymm":1308,"delve":0,"intricate":12.195122},{"yymm":1309,"delve":0,"intricate":0},{"yymm":1310,"delve":0,"intricate":20.04008},{"yymm":1311,"delve":0,"intricate":0},{"yymm":1312,"delve":8.865248,"intricate":44.326241},{"yymm":1401,"delve":0,"intricate":0},{"yymm":1402,"delve":9.208103,"intricate":0},{"yymm":1403,"delve":0,"intricate":0},{"yymm":1404,"delve":0,"intricate":7.770008},{"yymm":1405,"delve":0,"intricate":24.772915},{"yymm":1406,"delve":0,"intricate":9.057971},{"yymm":1407,"delve":0,"intricate":25.751073},{"yymm":1408,"delve":0,"intricate":0},{"yymm":1409,"delve":0,"intricate":0},{"yymm":1410,"delve":8.62069,"intricate":8.62069},{"yymm":1411,"delve":0,"intricate":9.099181},{"yymm":1412,"delve":0,"intricate":0},{"yymm":1501,"delve":0,"intricate":0},{"yymm":1502,"delve":0,"intricate":7.92393},{"yymm":1503,"delve":0,"intricate":7.132668},{"yymm":1504,"delve":7.178751,"intricate":7.178751},{"yymm":1505,"delve":0,"intricate":15.467904},{"yymm":1506,"delve":0,"intricate":20.632737},{"yymm":1507,"delve":0,"intricate":21.398003},{"yymm":1508,"delve":0,"intricate":26.246719},{"yymm":1509,"delve":0,"intricate":14.005602},{"yymm":1510,"delve":0,"intricate":0},{"yymm":1511,"delve":0,"intricate":17.657446},{"yymm":1512,"delve":0,"intricate":15.048909},{"yymm":1601,"delve":0,"intricate":39.308176},{"yymm":1602,"delve":0,"intricate":0},{"yymm":1603,"delve":0,"intricate":36.297641},{"yymm":1604,"delve":5.717553,"intricate":11.435106},{"yymm":1605,"delve":0,"intricate":11.129661},{"yymm":1606,"delve":0,"intricate":10.314595},{"yymm":1607,"delve":0,"intricate":18.552876},{"yymm":1608,"delve":0,"intricate":24.375381},{"yymm":1609,"delve":0,"intricate":27.824151},{"yymm":1610,"delve":0,"intricate":16.538037},{"yymm":1611,"delve":0,"intricate":23.730422},{"yymm":1612,"delve":0,"intricate":5.627462},{"yymm":1701,"delve":0,"intricate":5.524862},{"yymm":1702,"delve":0,"intricate":10.147133},{"yymm":1703,"delve":4.079967,"intricate":20.399837},{"yymm":1704,"delve":4.926108,"intricate":9.852217},{"yymm":1705,"delve":4.012841,"intricate":8.025682},{"yymm":1706,"delve":0,"intricate":27.700831},{"yymm":1707,"delve":8.467401,"intricate":12.701101},{"yymm":1708,"delve":0,"intricate":22.232103},{"yymm":1709,"delve":0,"intricate":8.169935},{"yymm":1710,"delve":0,"intricate":21.691974},{"yymm":1711,"delve":0,"intricate":7.538636},{"yymm":1712,"delve":0,"intricate":19.184652},{"yymm":1801,"delve":0,"intricate":8.795075},{"yymm":1802,"delve":0,"intricate":11.219147},{"yymm":1803,"delve":3.611412,"intricate":18.05706},{"yymm":1804,"delve":6.591958,"intricate":13.183916},{"yymm":1805,"delve":2.95421,"intricate":2.95421},{"yymm":1806,"delve":6.961364,"intricate":20.884093},{"yymm":1807,"delve":0,"intricate":19.361084},{"yymm":1808,"delve":14.771049,"intricate":29.542097},{"yymm":1809,"delve":0,"intricate":9.917355},{"yymm":1810,"delve":0,"intricate":14.788524},{"yymm":1811,"delve":2.723312,"intricate":8.169935},{"yymm":1812,"delve":0,"intricate":6.700168},{"yymm":1901,"delve":0,"intricate":6.598482},{"yymm":1902,"delve":0,"intricate":9.643202},{"yymm":1903,"delve":3.024803,"intricate":9.07441},{"yymm":1904,"delve":0,"intricate":18.993352},{"yymm":1905,"delve":4.691532,"intricate":14.074595},{"yymm":1906,"delve":0,"intricate":13.312034},{"yymm":1907,"delve":5.409792,"intricate":27.048959},{"yymm":1908,"delve":3.127932,"intricate":9.383797},{"yymm":1909,"delve":2.471577,"intricate":12.357884},{"yymm":1910,"delve":0,"intricate":14.855162},{"yymm":1911,"delve":2.564103,"intricate":35.897436},{"yymm":1912,"delve":2.95683,"intricate":8.870491},{"yymm":2001,"delve":6.277464,"intricate":21.971124},{"yymm":2002,"delve":2.563445,"intricate":10.253781},{"yymm":2003,"delve":0,"intricate":9.673519},{"yymm":2004,"delve":2.197319,"intricate":13.183916},{"yymm":2005,"delve":2.34852,"intricate":14.091123},{"yymm":2006,"delve":1.921599,"intricate":9.607994},{"yymm":2007,"delve":2.015316,"intricate":18.137848},{"yymm":2008,"delve":4.957858,"intricate":19.831433},{"yymm":2009,"delve":7.022472,"intricate":21.067416},{"yymm":2010,"delve":0,"intricate":23.553163},{"yymm":2011,"delve":8.250825,"intricate":22.689769},{"yymm":2012,"delve":4.082466,"intricate":12.247397},{"yymm":2101,"delve":5.219207,"intricate":7.82881},{"yymm":2102,"delve":8.667389,"intricate":10.834236},{"yymm":2103,"delve":13.610071,"intricate":8.506295},{"yymm":2104,"delve":5.614823,"intricate":18.716077},{"yymm":2105,"delve":3.873717,"intricate":5.810575},{"yymm":2106,"delve":5.00584,"intricate":18.354747},{"yymm":2107,"delve":6.343836,"intricate":23.260732},{"yymm":2108,"delve":4.231909,"intricate":8.463817},{"yymm":2109,"delve":3.75728,"intricate":13.150479},{"yymm":2110,"delve":0,"intricate":12.440021},{"yymm":2111,"delve":10.154346,"intricate":28.432169},{"yymm":2112,"delve":12.099214,"intricate":22.181892},{"yymm":2201,"delve":9.41398,"intricate":28.241939},{"yymm":2202,"delve":12.589173,"intricate":25.178347},{"yymm":2203,"delve":8.19135,"intricate":19.65924},{"yymm":2204,"delve":5.91133,"intricate":7.881773},{"yymm":2205,"delve":1.681237,"intricate":23.537323},{"yymm":2206,"delve":7.36106,"intricate":20.242915},{"yymm":2207,"delve":3.909304,"intricate":15.637217},{"yymm":2208,"delve":9.99001,"intricate":29.97003},{"yymm":2209,"delve":13.280212,"intricate":17.074559},{"yymm":2210,"delve":7.296075,"intricate":23.347439},{"yymm":2211,"delve":3.3173,"intricate":14.927849},{"yymm":2212,"delve":4.144219,"intricate":14.504766},{"yymm":2301,"delve":13.73312,"intricate":16.021973},{"yymm":2302,"delve":1.807011,"intricate":19.877123},{"yymm":2303,"delve":11.490951,"intricate":37.34559},{"yymm":2304,"delve":14.062225,"intricate":40.428898},{"yymm":2305,"delve":20.6849,"intricate":57.458056},{"yymm":2306,"delve":24.223425,"intricate":66.970647},{"yymm":2307,"delve":37.192755,"intricate":76.002587},{"yymm":2308,"delve":55.874358,"intricate":131.380248},{"yymm":2309,"delve":49.194991,"intricate":161.001789},{"yymm":2310,"delve":63.407886,"intricate":212.128199},{"yymm":2311,"delve":73.760415,"intricate":226.74498},{"yymm":2312,"delve":97.540288,"intricate":200.735086},{"yymm":2401,"delve":70.598617,"intricate":207.383439},{"yymm":2402,"delve":84.626234,"intricate":198.636577},{"yymm":2403,"delve":76.207554,"intricate":188.277485},{"yymm":2404,"delve":79.23368,"intricate":176.206244},{"yymm":2405,"delve":57.433179,"intricate":167.881599},{"yymm":2406,"delve":46.625222,"intricate":179.840142},{"yymm":2407,"delve":61.59074,"intricate":165.657853},{"yymm":2408,"delve":42.594119,"intricate":182.742512},{"yymm":2409,"delve":35.174112,"intricate":154.766092},{"yymm":2410,"delve":39.725533,"intricate":144.456482},{"yymm":2411,"delve":38.318912,"intricate":160.692213},{"yymm":2412,"delve":44.130627,"intricate":163.283319},{"yymm":2501,"delve":19.103413,"intricate":168.110036},{"yymm":2502,"delve":23.615074,"intricate":130.86687},{"yymm":2503,"delve":15.38044,"intricate":155.61386},{"yymm":2504,"delve":22.983702,"intricate":121.186795},{"yymm":2505,"delve":12.865873,"intricate":117.401094},{"yymm":2506,"delve":20.942408,"intricate":113.438045},{"yymm":2507,"delve":11.750881,"intricate":107.716412},{"yymm":2508,"delve":6.849315,"intricate":103.7182},{"yymm":2509,"delve":4.958268,"intricate":72.721263},{"yymm":2510,"delve":4.630702,"intricate":79.49371},{"yymm":2511,"delve":7.532957,"intricate":70.621469},{"yymm":2512,"delve":5.888704,"intricate":63.794288},{"yymm":2601,"delve":8.393174,"intricate":55.95449},{"yymm":2602,"delve":0.827472,"intricate":48.820852},{"yymm":2603,"delve":9.881423,"intricate":65.876153}]);
 
     // Set Chart.js global font to Georgia
     if (window.Chart && Chart.defaults && Chart.defaults.font) {
@@ -996,6 +1009,26 @@
       return Number.isFinite(parsed) ? parsed : 0;
     }
 
+    function seedPrecomputedDefaultCache() {
+      if (!Array.isArray(PRECOMPUTED_DEFAULT_SERIES) || !PRECOMPUTED_DEFAULT_SERIES.length) {
+        return false;
+      }
+      const fakeAbstractCount = 10000;
+      cachedMergedData = PRECOMPUTED_DEFAULT_SERIES.map(point => ({
+        YYMM: point.yymm,
+        // Store values as synthetic counts so existing per-abstract logic can be reused.
+        num_abstracts: fakeAbstractCount,
+        delve: (point.delve * fakeAbstractCount) / 10000,
+        intricate: (point.intricate * fakeAbstractCount) / 10000
+      }));
+      cachedSelections = PRECOMPUTED_DEFAULT_SELECTIONS.map(item => ({
+        mainKey: item.mainKey,
+        isAll: item.isAll,
+        subValues: [...item.subValues]
+      }));
+      return true;
+    }
+
     function setSumModeButtons(isSum) {
       const sepBtn = document.getElementById('separateBtn');
       const sumBtn = document.getElementById('sumBtn');
@@ -1094,7 +1127,7 @@
     }
 
     function getExportHeaderLayout(chart, exportWidth) {
-      const titleText = (document.getElementById('chartTitleText')?.textContent || 'Word Frequency Over Time').trim();
+      const titleText = (document.getElementById('chartTitleText')?.textContent || 'Word Frequency in arXiv Abstracts').trim();
       const legendItems = getVisibleLegendItems(chart);
       const sourceText = (document.getElementById('chartSourceText')?.textContent || '').trim();
       const measureCanvas = document.createElement('canvas');
@@ -1113,7 +1146,7 @@
         itemGap: 28,
         rowGap: 14,
         sourceTopGap: 8,
-        sourceFontSize: 16,
+        sourceFontSize: 20,
         sourceLineHeight: 22
       };
 
@@ -1202,7 +1235,7 @@
       }
     }
 
-    function renderChartTextMeta(chart, titleText = 'Word Frequency Over Time', sourceText = '') {
+    function renderChartTextMeta(chart, titleText = 'Word Frequency in arXiv Abstracts', sourceText = '') {
       const panelEl = document.querySelector('.chart-text-panel');
       const titleEl = document.getElementById('chartTitleText');
       const legendEl = document.getElementById('chartLegendText');
@@ -1213,7 +1246,7 @@
         panelEl.style.display = hasChart ? 'block' : 'none';
       }
       if (citationEl) {
-        citationEl.textContent = chartCitationText;
+        citationEl.innerHTML = `<a href="${chartCitationUrl}" target="_blank" rel="noopener noreferrer">${chartCitationText}</a>`;
         citationEl.style.display = hasChart ? 'block' : 'none';
       }
       if (titleEl) {
@@ -1492,7 +1525,7 @@
           }
         }
       });
-      renderChartTextMeta(myChart, 'Word Frequency Over Time', buildSelectionSourceText(cachedSelections));
+      renderChartTextMeta(myChart, 'Word Frequency in arXiv Abstracts', buildSelectionSourceText(cachedSelections));
       setDownloadButtonVisible(true);
     }
 
@@ -1692,7 +1725,7 @@
           }
         }
       });
-      renderChartTextMeta(myChart, 'Word Frequency Over Time', buildSelectionSourceText(selections));
+      renderChartTextMeta(myChart, 'Word Frequency in arXiv Abstracts', buildSelectionSourceText(selections));
       setDownloadButtonVisible(true);
     }
 
@@ -1717,7 +1750,11 @@
       setSumModeButtons(false);
       setYAxisModeButtons(false);
       setFrequencyMode('per_abstracts', true);
-      updateChart();
+      if (seedPrecomputedDefaultCache()) {
+        renderChartFromCache();
+      } else {
+        updateChart();
+      }
     });
   </script>
 </body>
