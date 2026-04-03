@@ -10,5 +10,6 @@ More results coming soon!
 
 ## References
 
-1. Geng, Mingmeng, and Roberto Trotta. "Is ChatGPT Transforming Academics' Writing Style?." *arXiv preprint arXiv:2404.08627 (2024)*.
-2. Geng, Mingmeng, et al. "The impact of large language models in academia: from writing to speaking." *Findings of the Association for Computational Linguistics: ACL 2025. 2025*.
+1. Geng, Mingmeng, Yuhang Dong, and Thierry Poibeau. "Beyond Via: Analysis and Estimation of the Impact of Large Language Models in Academic Papers." *arXiv preprint arXiv:2603.25638 (2026)*.
+2. Geng, Mingmeng, and Roberto Trotta. "Is ChatGPT Transforming Academics' Writing Style?." *arXiv preprint arXiv:2404.08627 (2024)*.
+3. Geng, Mingmeng, et al. "The impact of large language models in academia: from writing to speaking." *Findings of the Association for Computational Linguistics: ACL 2025. 2025*.
